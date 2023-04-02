@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ReplicatedLog.Common.Exceptions;
 using ReplicatedLog.Master.Services;
 
 namespace ReplicatedLog.Master.Controllers;
@@ -17,18 +18,21 @@ public class LogController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddMessage(string message)
+    public async Task<IActionResult> AddMessage([FromBody] string message)
     {
         try
         {
             _service.AppendMessageToLog(message);
         }
+        catch(ConnectionFailureException ex)
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Replication is currently blocked due to a connection failure with the Secondary server. Please try again later.");
+        }
         catch (Exception ex)
         {
-            _logger.LogError("Error during append to log message: {message}", message);
-            return BadRequest(ex.Message);
+            _logger.LogError("Error during append to log message: {message}, ex:{ex.Message}", message, ex.Message);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, ex.Message);
         }
-        
 
         return Ok();
     }

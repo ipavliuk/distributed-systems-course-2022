@@ -1,5 +1,6 @@
 ﻿using Common.Model;
 using Common.Repository;
+using ReplicatedLog.Common.Exceptions;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -23,10 +24,9 @@ namespace ReplicatedLog.Master.Services
 
         public async void AppendMessageToLog(string message)
         {
-            _logger.LogInformation("Master append message to Log");
+            
             long id = IdProvider.GenerateId();
             var msg = new Message(id, message);
-            _repository.Add(msg);
 
             var secondaryUrls = _configuration.GetSection("Secondaries:Urls").Get<List<string>>();
 
@@ -40,13 +40,22 @@ namespace ReplicatedLog.Master.Services
                 {
                     request.Content = new StringContent(JsonSerializer.Serialize(msg));
                     request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    var result = await httpClient.SendAsync(request);
-                    if (!result.IsSuccessStatusCode)
+                    try
                     {
-                        _logger.LogError("Error calling service {secondaryUrl} with status {result.StatusCode}", secondaryUrl, result.StatusCode);
+                        var result = await httpClient.SendAsync(request);
+                        result.EnsureSuccessStatusCode();
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        _logger.LogError("Error calling service {secondaryUrl}", secondaryUrl);
+                        throw new ConnectionFailureException("Failed to connect to Secondary server.");
                     }
                 }
             }
+            
+            _logger.LogInformation("Master append message to Log {message.Id}", msg.Id);
+            _repository.Add(msg);
+
         }
 
         public List<Message> GetAllMessages()

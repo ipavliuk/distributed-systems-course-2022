@@ -27,6 +27,14 @@ public class LogController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetMessages()
     {
-        return Ok(_repository.GetAll().Select(m => m.Msg));
+        int expected = 1; // [TODO] initialize the expected value to the first item from master!!!!!!
+        return Ok(_repository.GetAll().TakeWhile(m =>
+        {
+            bool result = m.Id == expected; // check if the current item is equal to the expected value
+            expected++; // increment the expected value for the next iteration
+            return result;
+        }).Select(m => m.Msg));
+
+        //return Ok(_repository.GetAll().Select(m => m.Msg));
     }
 }
