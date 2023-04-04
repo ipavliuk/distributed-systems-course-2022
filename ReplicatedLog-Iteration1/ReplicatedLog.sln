@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReplicatedLog.Secondary", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReplicatedLog.Common", "Common\ReplicatedLog.Common.csproj", "{634578DB-5E6B-4BEF-A3C1-01E636BA204B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplicatedLog.Test", "ReplicatedLog.Test\ReplicatedLog.Test.csproj", "{C9AB70B4-0018-478C-B9E8-FE0118516894}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{634578DB-5E6B-4BEF-A3C1-01E636BA204B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{634578DB-5E6B-4BEF-A3C1-01E636BA204B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{634578DB-5E6B-4BEF-A3C1-01E636BA204B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9AB70B4-0018-478C-B9E8-FE0118516894}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9AB70B4-0018-478C-B9E8-FE0118516894}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9AB70B4-0018-478C-B9E8-FE0118516894}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9AB70B4-0018-478C-B9E8-FE0118516894}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -26,7 +26,7 @@ public class LogController : ControllerBase
         }
         catch(ConnectionFailureException ex)
         {
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, "Replication is currently blocked due to a connection failure with the Secondary server. Please try again later.");
+            return StatusCode(StatusCodes.Status408RequestTimeout, "Replication is currently blocked due to a connection failure with the Secondary server. Please try again later.");
         }
         catch (Exception ex)
         {

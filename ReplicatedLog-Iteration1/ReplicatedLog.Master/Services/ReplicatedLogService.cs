@@ -53,7 +53,7 @@ namespace ReplicatedLog.Master.Services
                 }
             }
             
-            _logger.LogInformation("Master append message to Log {message.Id}", msg.Id);
+            _logger.LogInformation("Master append message to Log {message.Id}", msg.SequenceId);
             _repository.Add(msg);
 
         }

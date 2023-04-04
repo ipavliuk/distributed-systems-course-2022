@@ -19,7 +19,7 @@ public class LogController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AppendMessage(Message message)
     {
-        _logger.LogInformation("Secondary append message {message.Id}", message.Id);
+        _logger.LogInformation("Secondary append message {message.Id}", message.SequenceId);
         _repository.Add(message);
         return Ok();
     }
@@ -30,7 +30,7 @@ public class LogController : ControllerBase
         int expected = 1; // [TODO] initialize the expected value to the first item from master!!!!!!
         return Ok(_repository.GetAll().TakeWhile(m =>
         {
-            bool result = m.Id == expected; // check if the current item is equal to the expected value
+            bool result = m.SequenceId == expected; // check if the current item is equal to the expected value
             expected++; // increment the expected value for the next iteration
             return result;
         }).Select(m => m.Msg));

@@ -8,12 +8,12 @@ namespace Common.Model
 {
     public record Message
     {
-        public long Id { get; init; }
-
+        public long SequenceId { get; init; }
         public string Msg { get; init; }
-        public Message(long id, string msg) 
+
+        public Message(long sequenceId, string msg) 
         {
-            Id = id; 
+            SequenceId = sequenceId; 
             Msg = msg;
         }
         
