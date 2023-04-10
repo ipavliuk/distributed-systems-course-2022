@@ -19,8 +19,10 @@ public class LogController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> AppendMessage(Message message)
     {
-        _logger.LogInformation("Secondary append message {message.Id}", message.SequenceId);
+        Thread.Sleep(3000);
         _repository.Add(message);
+        _logger.LogInformation("Secondary appended message {message.Id}", message.SequenceId);
+
         return Ok();
     }
 

@@ -18,11 +18,16 @@ public class LogController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddMessage([FromBody] string message)
+    public async Task<IActionResult> AddMessage([FromBody] string message, [FromQuery] int writeConcern = 3)
     {
+        if (writeConcern < 1 || writeConcern > 3)
+        {
+            return BadRequest("Write Concern should be in range [1,3]");
+        }
+
         try
         {
-            _service.AppendMessageToLog(message);
+            await _service.AppendMessageToLog(message, writeConcern);
         }
         catch(ConnectionFailureException ex)
         {

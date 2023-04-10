@@ -5,7 +5,7 @@ namespace ReplicatedLog.Master.Services
 {
     public interface IReplicatedLogService
     {
-        void AppendMessageToLog(string message);
+        Task AppendMessageToLog(string message, int writeConcern);
         List<Message> GetAllMessages();
     }
 }
