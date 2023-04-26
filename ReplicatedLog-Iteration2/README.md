@@ -8,7 +8,7 @@
 ## Setup
 1. Clone the repository: `git clone https://github.com/ipavliuk/distributed-systems-course-2022.git`
 2. Navigate to the project root directory: `cd ReplicatedLog-Iteration2\Docker`
-4. Setup append log message timeouts on each secondaries in docker-compose.yaml file in secondary1:environment:AppendMessageResponseTimeOut or secondary2:environment:AppendMessageResponseTimeOut
+4. Setup append log message timeouts on each secondaries in docker-compose.yaml file in `secondary1:environment:AppendMessageResponseTimeOut` and `secondary2:environment:AppendMessageResponseTimeOut`
 3. Build the Docker images using Docker Compose: `docker-compose build`
 
 ## Running the application
@@ -33,9 +33,9 @@ master_1     |       Application started. Press Ctrl+C to shut down.
 
 
 3. Open Postman and import the provided collection, `replicated-log.postman_collection.json`
-4. Run the "Master Get messages" request to ensure that the master container is running and accessible.
-5. Run the "Secondary1 Get messages" and "Secondary2 Get messages" requests to ensure that the secondary containers are running and accessible.
-6. Run the "Master Append message" with "writeConcern" query parameter (if not passed the default value is 3) request multiple times with different writeConcern to add messages to the replicated log.
+4. Run the **Master Get messages** request to ensure that the master container is running and accessible.
+5. Run the **Secondary1 Get messages** and **Secondary2 Get messages** requests to ensure that the secondary containers are running and accessible.
+6. Run the **Master Append message** with **"writeConcern"** query parameter (if not passed the default value is 3) request multiple times with different writeConcern to add messages to the replicated log.
    Depending on the time set in AppendMessageResponseTimeOut env variable it's better to set different time in secondaries.
    Or use Runner to create iteration loop. By default each message would be with id generated `"test-message{{id}}"`
 
