@@ -1,0 +1,118 @@
+{
+	"info": {
+		"_postman_id": "69389712-fac0-4534-b8f7-24c413b726ea",
+		"name": "replicated-log-docker-ucu",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2009619"
+	},
+	"item": [
+		{
+			"name": "Master Get messages",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/log",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Secondary1 Get messages",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5001/api/log",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5001",
+					"path": [
+						"api",
+						"log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Secondary2 Get messages",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5002/api/log",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5002",
+					"path": [
+						"api",
+						"log"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Master Append message",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let id = pm.variables.get(\"id\") || 0;\r",
+							"pm.variables.set(\"id\", parseInt(id) + 1);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\"test-message{{id}}\"",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/log?writeConcern=3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"log"
+					],
+					"query": [
+						{
+							"key": "writeConcern",
+							"value": "3"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

@@ -1,0 +1,42 @@
+version: '3'
+services:
+  master:
+    build:
+      context: ../.
+      dockerfile: ./ReplicatedLog.Master/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Secondaries__Urls__0=http://secondary1:80
+      - Secondaries__Urls__1=http://secondary2:80
+    ports:
+      - "5000:80"
+    depends_on:
+      - secondary1
+      - secondary2
+    networks:
+      - replicated-log-network
+  secondary1:
+    build:
+      context: ../.
+      dockerfile: ./ReplicatedLog.Secondary/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AppendMessageResponseTimeOut=3000
+    ports:
+      - "5001:80"
+    networks:
+      - replicated-log-network
+  secondary2:
+    build:
+      context: ../.
+      dockerfile: ./ReplicatedLog.Secondary/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AppendMessageResponseTimeOut=5000
+    ports:
+      - "5002:80"
+    networks:
+      - replicated-log-network
+
+networks:
+  replicated-log-network:
