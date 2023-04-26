@@ -94,7 +94,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:5000/api/log",
+					"raw": "http://localhost:5000/api/log?writeConcern=3",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -103,6 +103,12 @@
 					"path": [
 						"api",
 						"log"
+					],
+					"query": [
+						{
+							"key": "writeConcern",
+							"value": "3"
+						}
 					]
 				}
 			},
