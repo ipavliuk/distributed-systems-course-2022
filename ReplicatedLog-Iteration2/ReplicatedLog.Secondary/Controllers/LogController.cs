@@ -10,16 +10,25 @@ public class LogController : ControllerBase
 {
     private readonly IRepository _repository;
     private readonly ILogger _logger;
-    public LogController(IRepository repository, ILogger<LogController> logger)
+    private readonly IConfiguration _configuration;
+
+    public LogController(IRepository repository, ILogger<LogController> logger, IConfiguration configuration)
     {
         _repository = repository;
         _logger = logger;
+        _configuration = configuration;
     }
 
     [HttpPost]
     public async Task<IActionResult> AppendMessage(Message message)
     {
-        Thread.Sleep(3000);
+        //for testing purposes
+        int? appendMsgTimeout = _configuration.GetSection("AppendMessageResponseTimeOut")?.Get<int>();
+        if (appendMsgTimeout != null && appendMsgTimeout > 0)
+        {
+            Thread.Sleep((int)appendMsgTimeout);
+        }
+        
         _repository.Add(message);
         _logger.LogInformation("Secondary appended message {message.Id}", message.SequenceId);
 
@@ -37,6 +46,5 @@ public class LogController : ControllerBase
             return result;
         }).Select(m => m.Msg));
 
-        //return Ok(_repository.GetAll().Select(m => m.Msg));
     }
 }

@@ -18,7 +18,7 @@ public class LogController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> AddMessage([FromBody] string message, [FromQuery] int writeConcern = 3)
+    public async Task<IActionResult> AddMessage([FromBody] string message, int writeConcern = 3)
     {
         if (writeConcern < 1 || writeConcern > 3)
         {
