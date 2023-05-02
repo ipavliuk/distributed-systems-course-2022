@@ -1,9 +1,16 @@
 ﻿using Common.Model;
 using Common.Repository;
+using Microsoft.Extensions.Options;
 using ReplicatedLog.Common.Exceptions;
+using ReplicatedLog.Common.Repository;
+using ReplicatedLog.Master.HeartBeat;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ReplicatedLog.Master.Services
 {
@@ -13,13 +20,25 @@ namespace ReplicatedLog.Master.Services
         private readonly IRepository _repository;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IConfiguration _configuration;
+        private readonly IClusterHealthManager _healthManager;
+        private readonly IOptions<RetryOptions> _retryOptions;
+        private readonly IReplicationBacklog _replicationBacklog;
 
-        public ReplicatedLogService(IRepository repository, IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<ReplicatedLogService> logger)
+        public ReplicatedLogService(IRepository repository,
+                                    IHttpClientFactory httpClientFactory,
+                                    IConfiguration configuration,
+                                    ILogger<ReplicatedLogService> logger,
+                                    IClusterHealthManager healthManager,
+                                    IOptions<RetryOptions> retryOptions,
+                                    IReplicationBacklog replicationBacklog)
         {
             _repository = repository;
             _httpClientFactory = httpClientFactory;
             _configuration = configuration;
             _logger = logger;
+            _healthManager = healthManager;
+            _retryOptions = retryOptions;
+            _replicationBacklog = replicationBacklog;
         }
 
 
@@ -44,39 +63,57 @@ namespace ReplicatedLog.Master.Services
                 var httpClient = _httpClientFactory.CreateClient();
                 httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
+                if (!_healthManager.IsNodeAvailable(secondaryUrl))
+                {
+                    _logger.LogWarning("Secondary {secondaryUrl} is not available. Adding message {msg.SequenceId} to replication backlog.", secondaryUrl, msg.SequenceId);
+                    _replicationBacklog.AddMessageToBacklog(secondaryUrl, msg, latch.GetTaskCompletionSource());
+                    continue;
+                }
+
                 try
                 {
-                    tasks.Add(Task.Run(async () =>
+                    //The List<Task> called tasks is used to hold all the tasks that are started to replicate the message to the secondary nodes.
+                    //This allows the method to asynchronously wait for all the tasks to complete, which is necessary to ensure that the required number of acknowledgments have been received before the method can complete.
+                    //Each task executes the RetryWithExponentialBackoff.ExecuteAsync() method, which attempts to send the message to the secondary node and retries with exponential backoff in case of failure.
+                    //Once a task completes, the CountDownLatch object is decremented to indicate that the task has finished.
+                    tasks.Add(RetryWithExponentialBackoff.ExecuteAsync<Task>(async () =>
                     {
-                        try
+                        using (var content = new StringContent(JsonSerializer.Serialize(msg)))
                         {
-                            using (var content = new StringContent(JsonSerializer.Serialize(msg)))
+                            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+                            using (var request = new HttpRequestMessage(HttpMethod.Post, $"{secondaryUrl}/api/log") { Content = content })
                             {
-                                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                                using (var request = new HttpRequestMessage(HttpMethod.Post, $"{secondaryUrl}/api/log") { Content = content })
-                                {
-                                    var result = await httpClient.SendAsync(request);
-                                    result.EnsureSuccessStatusCode();
-                                    _logger.LogInformation("Replication to {secondaryUrl} completed successfully", secondaryUrl);
-                                    latch.CountDown(); // decrement the latch on success
-                                }
+                                var result = await httpClient.SendAsync(request);
+                                result.EnsureSuccessStatusCode();
+                                _logger.LogInformation("Replication to {secondaryUrl} completed successfully", secondaryUrl);
+                                latch.CountDown(); // decrement the latch on success
                             }
-                            
                         }
-                        catch (HttpRequestException ex)
-                        {
-                            _logger.LogError("Error calling service {secondaryUrl}", secondaryUrl);
-                        }
+                        return Task.CompletedTask; // return a completed task object
+                    },
+                    _retryOptions.Value,
+                    _logger,
+                    async () => 
+                    {
+                        _logger.LogError($"Retry attempts exceeded. Adding message {msg.SequenceId} to backlog for secondary server {secondaryUrl}");
+                        _replicationBacklog.AddMessageToBacklog(secondaryUrl, msg, latch.GetTaskCompletionSource());
                     }));
                 }
-                catch (HttpRequestException ex)
+                catch (HttpRequestException ex)//No need this
                 {
                     _logger.LogError("Error calling service {secondaryUrl}", secondaryUrl);
                     throw new ConnectionFailureException("Failed to connect to Secondary server.");
                 }
-
-               
             }
+            //try
+            //{
+            //    await Task.WhenAll(tasks);
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError($"Error replicating message: {ex.Message}");
+            //    throw;
+            //}
 
             if (writeConcern > 1)
             {
@@ -84,10 +121,10 @@ namespace ReplicatedLog.Master.Services
             }
         }
 
-
         public List<Message> GetAllMessages()
         {
             return _repository.GetAll();
         }
+
     }
 }

@@ -47,4 +47,6 @@ public class LogController : ControllerBase
         }).Select(m => m.Msg));
 
     }
+
+    
 }

@@ -15,6 +15,11 @@ public class CountDownLatch
         return _tcs.Task;
     }
 
+    public TaskCompletionSource<bool> GetTaskCompletionSource()
+    {
+        return _tcs;
+    }
+
     public void CountDown()
     {
         _countdownEvent.Signal();

@@ -1,5 +1,4 @@
 ﻿using Common.Model;
-using System.Linq;
 
 namespace Common.Repository;
 
@@ -12,7 +11,7 @@ public class InMemoryRepository : IRepository
 
     public void Add(Message msg)
     {
-        lock(_lock) // handle concurent requests - avoit race conditions in case of multiple request comming to append message
+        lock(_lock) // handle concurent requests - avoid race conditions in case of multiple request comming to append message
         {
             if (msg.SequenceId == _nextExpectedSequenceId)
             {

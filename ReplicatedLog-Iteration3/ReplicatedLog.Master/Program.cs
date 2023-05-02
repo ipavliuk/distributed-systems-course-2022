@@ -1,5 +1,7 @@
 using Common.Repository;
+using ReplicatedLog.Master.HeartBeat;
 using ReplicatedLog.Master.Services;
+using ReplicatedLog.Common.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +10,21 @@ builder.Services.AddControllers();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
+
 builder.Services.AddSingleton<IRepository, InMemoryRepository>()
-                .AddScoped<IReplicatedLogService, ReplicatedLogService>();
+                .AddSingleton<IClusterHealthManager, ClusterHealthManager>()
+                .AddSingleton<IReplicationBacklog, ReplicationBacklog>()
+                .AddScoped<IReplicatedLogService, ReplicatedLogService>()
+                .AddScoped<IMissedMessageReplicator, MissedMessageReplicator>();
+
+
+
+builder.Services.Configure<RetryOptions>(
+                builder.Configuration.GetSection("RetryPolicy")
+    );
+
+builder.Services.AddHostedService<ClusterHealthCheckService>();
+
 builder.Services.AddHttpClient();
 
 
