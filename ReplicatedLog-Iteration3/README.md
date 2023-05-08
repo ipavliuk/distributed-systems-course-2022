@@ -1,4 +1,4 @@
-# Replicated log - iteration 2
+# Replicated log - iteration 3
 # Running the Replicated Log application using Docker Compose
 
 ## Prerequisites

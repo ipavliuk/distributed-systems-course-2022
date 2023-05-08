@@ -15,7 +15,7 @@ builder.Services.AddSingleton<IRepository, InMemoryRepository>()
                 .AddSingleton<IClusterHealthManager, ClusterHealthManager>()
                 .AddSingleton<IReplicationBacklog, ReplicationBacklog>()
                 .AddScoped<IReplicatedLogService, ReplicatedLogService>()
-                .AddScoped<IMissedMessageReplicator, MissedMessageReplicator>();
+                .AddSingleton<IMissedMessageReplicator, MissedMessageReplicator>();
 
 
 

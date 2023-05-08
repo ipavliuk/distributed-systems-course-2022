@@ -105,15 +105,6 @@ namespace ReplicatedLog.Master.Services
                     throw new ConnectionFailureException("Failed to connect to Secondary server.");
                 }
             }
-            //try
-            //{
-            //    await Task.WhenAll(tasks);
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError($"Error replicating message: {ex.Message}");
-            //    throw;
-            //}
 
             if (writeConcern > 1)
             {

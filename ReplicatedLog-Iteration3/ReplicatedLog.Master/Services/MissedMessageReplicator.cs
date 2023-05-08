@@ -21,8 +21,8 @@ namespace ReplicatedLog.Master.Services
 
         public async Task ReplicateMissedMessagesAsync(string secondaryUrl)
         {
-            Queue<BacklogItem> backlogForSecondary;
-            if (!_replicationBacklog.TryGetMassages(secondaryUrl, out backlogForSecondary))
+            //Queue<BacklogItem> backlogForSecondary;
+            if (!_replicationBacklog.TryGetMassages(secondaryUrl, out var backlogForSecondary))
             {
                 return;
             }
@@ -45,8 +45,14 @@ namespace ReplicatedLog.Master.Services
                                     result.EnsureSuccessStatusCode();
                                     _logger.LogInformation("Replication to {secondaryUrl} completed successfully", secondaryUrl);
                                     backlogForSecondary.Dequeue();
-                                    //update countdownlatch 
-                                    message.Tcs.SetResult(true);
+                                    _replicationBacklog.MessageCompleted(message.Msg.SequenceId);
+                                    if (_replicationBacklog.IsMessageReplicated(message.Msg.SequenceId))
+                                    {
+                                        //update countdownlatch 
+                                        message.Tcs.SetResult(true);
+                                        _replicationBacklog.RemoveOutstandingMessage(message.Msg.SequenceId);
+                                    }
+                                   
                                 }
                             }
                         }
