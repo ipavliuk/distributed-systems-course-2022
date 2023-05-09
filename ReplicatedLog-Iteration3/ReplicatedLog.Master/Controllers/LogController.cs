@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ReplicatedLog.Common.Exceptions;
-using ReplicatedLog.Master.Services;
+using ReplicatedLog.Master.Services.ReplicatedLogService;
 
 namespace ReplicatedLog.Master.Controllers;
 

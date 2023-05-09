@@ -1,5 +1,6 @@
-﻿using ReplicatedLog.Master.Enums;
-using ReplicatedLog.Master.Services;
+﻿using Microsoft.Extensions.Configuration;
+using ReplicatedLog.Master.Enums;
+using ReplicatedLog.Master.Services.MissedMessageReplicator;
 using System.Collections.Concurrent;
 
 namespace ReplicatedLog.Master.HeartBeat;
@@ -89,7 +90,8 @@ public class ClusterHealthManager: IClusterHealthManager
 
     public void Start()
     {
-        _heartbeatTimer = new Timer(OnHeartbeatTimerElapsed, null, TimeSpan.Zero, TimeSpan.FromSeconds(60)); // TODO: add config time
+        var heartBeatInSec = _configuration.GetValue<long>("HeartBeatIntervalInSeconds");
+        _heartbeatTimer = new Timer(OnHeartbeatTimerElapsed, null, TimeSpan.Zero, TimeSpan.FromSeconds(heartBeatInSec)); // TODO: add config time
     }
 
     public void Stop()
